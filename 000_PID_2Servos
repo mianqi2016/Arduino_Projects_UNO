@@ -1,0 +1,74 @@
+#include <Pixy2.h>
+#include <Pixy2CCC.h>
+Pixy2 pixy;
+
+#include <PID_v1.h>
+double Input1=0;
+double Input2=0;
+double Output1=0;
+double Output2=0;
+double Setpoint1=175;
+double Setpoint2=108;
+double Kp1=1;double Ki1=200;double Kd1=5000;
+double Kp2=1;double Ki2=200;double Kd2=5000;
+PID myPID1(&Input1,&Output1,&Setpoint1,Kp1,Ki1,Kd1,DIRECT);
+PID myPID2(&Input2,&Output2,&Setpoint2,Kp2,Ki2,Kd2,DIRECT);
+double koordi_x=0;double koordi_y=0;
+
+#include <Servo.h>
+Servo myServo1;
+Servo myServo2;
+double posServo1=0;
+double posServo2=0;
+
+ void setup() {
+  Serial.begin(9600);
+  pixy.init();
+  
+  myPID1.SetMode(AUTOMATIC);  
+  myPID2.SetMode(AUTOMATIC);
+
+  myServo1.attach(5);
+  myServo2.attach(6);
+}
+
+void loop() {
+  pixy.ccc.getBlocks();
+  myFun();
+}
+
+void myFun(){
+  Input1=koordi_x=pixy.ccc.blocks[0].m_x;
+  Input2=koordi_y=pixy.ccc.blocks[0].m_y;
+  //Serial.print("x: ");
+  Serial.print(koordi_x);
+  Serial.print("    ");
+  //Serial.print("y: ");
+  Serial.println(koordi_y);
+  myPID1.Compute();
+  myPID2.Compute();
+  myPID1.SetSampleTime(5);//
+  myPID2.SetSampleTime(5);
+  //Serial.print("Output1: ");
+  //Serial.print(Output1);
+  //Serial.print("    ");
+  //Serial.print("Output2: ");
+  //Serial.println(Output2);
+  delay(5);
+  myFun2();
+}
+void myFun2(){
+  posServo1=map(Output1,70,280,80,100);
+  posServo2=map(Output2,10,220,80,100);
+  
+  myServo1.write(posServo1);
+  myServo2.write(posServo2);
+
+  //Serial.print("Input1: ");
+  //Serial.println(Input1);
+  //Serial.print("Input2: ");
+  //Serial.println(Input2);
+
+  //delay(10);
+}
+  
